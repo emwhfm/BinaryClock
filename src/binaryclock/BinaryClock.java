@@ -9,11 +9,13 @@ package binaryclock;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.ArrayList;
+import javafx.util.Duration;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -22,6 +24,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 
 /**
  *
@@ -46,17 +50,11 @@ public class BinaryClock extends Application {
         root.setBottom(bottomPane);
         root.setStyle("-fx-background-color: black");      
         
-        new Thread(() -> { // lambda expression
-            try {
-                while (true) {                    
-                    Platform.runLater(() -> updateTime()); // lambda exp
-                    Thread.sleep(250);
-                }
-            }
-            catch (InterruptedException ex) {
-            }
-        }).start();
-        
+        // Create an animation for alternating text
+        Timeline animation = new Timeline(
+            new KeyFrame(Duration.millis(250), eventHandler));
+        animation.setCycleCount(Timeline.INDEFINITE);
+        animation.play(); // Start animation
         
         Scene scene = new Scene(root, 350, 300);
         
@@ -65,12 +63,13 @@ public class BinaryClock extends Application {
         primaryStage.show();
     }
 
-    private void updateTime() {        
+    // Create a handler for updating timec
+    EventHandler<ActionEvent> eventHandler = e -> {
         clockPane.setCurrentTime();
         String timeString = String.format("%02d:%02d:%02d", clockPane.getHour(), 
                 clockPane.getMinute(), clockPane.getSecond());
         labelTime.setText(timeString);
-    }
+    };
     
     /**
      * @param args the command line arguments
@@ -90,7 +89,7 @@ class ClockPane extends Pane {
     private int minute;
     private int second;
 
-    private ArrayList<Circle> circles = new ArrayList<>();
+    private final ArrayList<Circle> circles = new ArrayList<>();
 
     public ClockPane() {        
         //getChildren().clear();
